@@ -2,8 +2,12 @@
 
 const mongoose = require("mongoose");
 const { countConnect } = require("../helpers/check.connect");
-const connectString =
-  "mongodb+srv://Cluster09279:letronghiep1@cluster09279.0xtxlqi.mongodb.net/eCommerce-shop";
+const {
+  db: { name, password },
+} = require("../configs/config.db");
+
+const connectString =  `mongodb+srv://Cluster09279:${password}@cluster09279.0xtxlqi.mongodb.net/${name}`
+console.log(connectString);
 class Database {
   constructor() {
     this.connect();
