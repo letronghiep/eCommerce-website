@@ -11,7 +11,9 @@ app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
 // init db
-
+require("./db/init.mongodb");
+const { checkOverLoad } = require("./helpers/check.connect");
+checkOverLoad();
 // init router
 app.get("/", (req, res, next) => {
   return res.status(200).json({
