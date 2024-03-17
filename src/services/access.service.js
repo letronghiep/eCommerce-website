@@ -6,6 +6,7 @@ const shopModel = require("../models/shop.model");
 const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils/index");
+const { BadRequestError } = require("../core/error.response");
 const SHOP_ROLES = {
   ADMIN: "admin",
   WRITER: "writer",
@@ -14,14 +15,11 @@ const SHOP_ROLES = {
 };
 class AccessService {
   static signUp = async ({ name, email, password }) => {
-    try {
+
       // check email exists
       const holderShop = await shopModel.findOne({ email }).lean();
       if (holderShop) {
-        return {
-          code: "xxxx",
-          message: "Shop is registered!",
-        };
+        throw new BadRequestError("Error: Shop is already registered");
       }
       const passwordHashed = await bcrypt.hash(password, 10);
       const newShop = await shopModel.create({
@@ -57,10 +55,7 @@ class AccessService {
           privateKey,
         });
         if (!keyStore) {
-          return {
-            code: "xxxx",
-            message: "keyStore error",
-          };
+          throw new BadRequestError("Error: keyStore undefined");
         }
         // created token pair
         const tokens = await createTokenPair(
@@ -84,13 +79,7 @@ class AccessService {
         code: 200,
         metadata: null,
       };
-    } catch (error) {
-      return {
-        code: "xxx",
-        message: error.message,
-        status: "error",
-      };
-    }
+  
   };
 }
 module.exports = AccessService;
