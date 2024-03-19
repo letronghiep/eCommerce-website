@@ -1,12 +1,23 @@
 @url_dev=http://localhost:3055/v1/api
 ### signup
 
-POST {{url_dev}}/shop/signup
+# POST {{url_dev}}/shop/signup
+# Content-Type: application/json
+# x-api-key: 73fe9c15213a4eb8c469128e494d70bc16de2950d2b9366df21ac591b250a6ce8ef008290d61138c278ba9187f172a49af40cc0dbc485b300eebbb2ec7ec5c7c
+
+# {
+#     "name": "Hiep Le",
+#     "email": "letronghiep2@gmail.com",
+#     "password": "abc123"
+# }
+
+
+
+POST {{url_dev}}/shop/login
 Content-Type: application/json
-x-api-key: dd9f0c272344881b2e2ab023a3a87ba79f8bd682557d9fba2a2e15b244972457472e11cb0b3e52d333bd6f264e3ab2899a0ffe78ecf383e0b8c09cc5e514bfc9
+x-api-key: 73fe9c15213a4eb8c469128e494d70bc16de2950d2b9366df21ac591b250a6ce8ef008290d61138c278ba9187f172a49af40cc0dbc485b300eebbb2ec7ec5c7c
 
 {
-    "name": "Hiep Le",
-    "email": "letronghiep11@gmail.com",
+    "email": "letronghiep@gmail.com",
     "password": "abc123"
 }
