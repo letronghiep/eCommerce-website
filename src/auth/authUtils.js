@@ -47,13 +47,10 @@ const authentication = asyncHandler(async (req, res, next) => {
   if (!accessToken) throw new AuthFailureError("Invalid Request");
 
   try {
-    console.log('====================================');
+    console.log("====================================");
     console.log("keyStr::", accessToken);
-    console.log('====================================');
-    const decodeUser = JWT.verify(
-      accessToken,
-      keyStore.publicKey
-    );
+    console.log("====================================");
+    const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
     console.log("decode úe", decodeUser);
     if (userId !== decodeUser.userId)
       throw new AuthFailureError("Invalid User id");
@@ -63,7 +60,11 @@ const authentication = asyncHandler(async (req, res, next) => {
     throw error;
   }
 });
+const verifyJWT = async (token, keySecret) => {
+  return await JWT.verify(token, keySecret);
+};
 module.exports = {
   createTokenPair,
   authentication,
+  verifyJWT
 };

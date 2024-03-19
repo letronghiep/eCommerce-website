@@ -4,9 +4,13 @@ const crypto = require("crypto");
 
 const shopModel = require("../models/shop.model");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../auth/authUtils");
+const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { getInfoData } = require("../utils/index");
-const { BadRequestError, AuthFailureError } = require("../core/error.response");
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbiddenError,
+} = require("../core/error.response");
 
 // shop
 const { findByEmail } = require("./shop.service");
@@ -127,6 +131,52 @@ class AccessService {
     return {
       code: 200,
       metadata: null,
+    };
+  };
+  // handle refreshToken
+  static handleRefreshToken = async (refreshToken) => {
+    // check Token is used ?
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    );
+    if (foundToken) {
+      // verify userId and check in db exists
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey
+      );
+      console.log({ userId, email });
+      // Xoa tat ca token trong keyStore
+      await KeyTokenService.deleteKeyById(userId);
+      console.log("Xoa roi");
+      throw new ForbiddenError("Something went wrong|| Pls re-login");
+    }
+    // refreshToken is not used
+    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+    if (!holderToken) throw new AuthFailureError("Shop not found");
+    // verify token
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey
+    );
+    console.log("[2]---", { userId, email });
+    const tokens = await createTokenPair(
+      { userId, email },
+      holderToken.publicKey,
+      holderToken.privateKey
+    );
+    // Update token
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken, // refreshToken is used
+      },
+    });
+    return {
+      user: { userId, email },
+      tokens,
     };
   };
 }
