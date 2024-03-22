@@ -9,7 +9,6 @@
 //   CONFLICT: "Conflict error",
 // };
 const {
-  StatusCode,
   ReasonPhrases,
   StatusCodes,
 } = require("../utils/httpStatusCode");
@@ -23,7 +22,7 @@ class ErrorResponse extends Error {
 class ConflictRequestError extends ErrorResponse {
   constructor(
     message = ReasonPhrases.CONFLICT,
-    statusCode = StatusCode.CONFLICT
+    statusCode = StatusCodes.CONFLICT
   ) {
     super(message, statusCode);
   }
@@ -32,7 +31,7 @@ class ConflictRequestError extends ErrorResponse {
 class BadRequestError extends ErrorResponse {
   constructor(
     message = ReasonPhrases.FORBIDDEN,
-    statusCode = StatusCode.FORBIDDEN
+    statusCode = StatusCodes.FORBIDDEN
   ) {
     super(message, statusCode);
   }
@@ -41,7 +40,7 @@ class BadRequestError extends ErrorResponse {
 class AuthFailureError extends ErrorResponse {
   constructor(
     message = ReasonPhrases.UNAUTHORIZED,
-    statusCode = StatusCode.UNAUTHORIZED
+    statusCode = StatusCodes.UNAUTHORIZED
   ) {
     super(message, statusCode);
   }
@@ -49,7 +48,7 @@ class AuthFailureError extends ErrorResponse {
 class NotFoundError extends ErrorResponse {
   constructor(
     message = ReasonPhrases.NOT_FOUND,
-    statusCode = StatusCode.NOT_FOUND
+    statusCode = StatusCodes.NOT_FOUND
   ) {
     super(message, statusCode);
   }
