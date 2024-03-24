@@ -101,7 +101,7 @@ class AccessService {
       const publicKey = await crypto.randomBytes(64).toString("hex");
       const privateKey = await crypto.randomBytes(64).toString("hex");
 
-      console.log({ privateKey, publicKey }); // save to KeyModel
+      // console.log({ privateKey, publicKey }); // save to KeyModel
       const keyStore = await KeyTokenService.createKeyToken({
         userId: newShop._id,
         publicKey,
@@ -134,39 +134,72 @@ class AccessService {
     };
   };
   // handle refreshToken
-  static handleRefreshToken = async (refreshToken) => {
-    // check Token is used ?
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
-      refreshToken
-    );
-    if (foundToken) {
-      // verify userId and check in db exists
-      const { userId, email } = await verifyJWT(
-        refreshToken,
-        foundToken.privateKey
-      );
-      console.log({ userId, email });
-      // Xoa tat ca token trong keyStore
+  // static handleRefreshToken = async (refreshToken) => {
+  //   // check Token is used ?
+  //   const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+  //     refreshToken
+  //   );
+  //   if (foundToken) {
+  //     // verify userId and check in db exists
+  //     const { userId, email } = await verifyJWT(
+  //       refreshToken,
+  //       foundToken.privateKey
+  //     );
+  //     console.log({ userId, email });
+  //     // Xoa tat ca token trong keyStore
+  //     await KeyTokenService.deleteKeyById(userId);
+  //     console.log("Xoa roi");
+  //     throw new ForbiddenError("Something went wrong|| Pls re-login");
+  //   }
+  //   // refreshToken is not used
+  //   const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+  //   if (!holderToken) throw new AuthFailureError("Shop not found");
+  //   // verify token
+  //   const { userId, email } = await verifyJWT(
+  //     refreshToken,
+  //     holderToken.privateKey
+  //   );
+  //   console.log("[2]---", { userId, email });
+  //   const tokens = await createTokenPair(
+  //     { userId, email },
+  //     holderToken.publicKey,
+  //     holderToken.privateKey
+  //   );
+  //   // Update token
+  //   await holderToken.updateOne({
+  //     $set: {
+  //       refreshToken: tokens.refreshToken,
+  //     },
+  //     $addToSet: {
+  //       refreshTokensUsed: refreshToken, // refreshToken is used
+  //     },
+  //   });
+  //   return {
+  //     user: { userId, email },
+  //     tokens,
+  //   };
+  // };
+  static handleRefreshTokenV2 = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       await KeyTokenService.deleteKeyById(userId);
-      console.log("Xoa roi");
-      throw new ForbiddenError("Something went wrong|| Pls re-login");
+      throw new ForbiddenError(
+        "Something went wrong happend!! Pls login again"
+      );
     }
-    // refreshToken is not used
-    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
-    if (!holderToken) throw new AuthFailureError("Shop not found");
-    // verify token
-    const { userId, email } = await verifyJWT(
-      refreshToken,
-      holderToken.privateKey
-    );
-    console.log("[2]---", { userId, email });
+
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError("Shop is not register");
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registered");
+    // check Token is used ?
     const tokens = await createTokenPair(
       { userId, email },
-      holderToken.publicKey,
-      holderToken.privateKey
+      keyStore.publicKey,
+      keyStore.privateKey
     );
     // Update token
-    await holderToken.updateOne({
+    await keyStore.updateOne({
       $set: {
         refreshToken: tokens.refreshToken,
       },
@@ -175,7 +208,7 @@ class AccessService {
       },
     });
     return {
-      user: { userId, email },
+      user,
       tokens,
     };
   };
