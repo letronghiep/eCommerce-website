@@ -1,6 +1,10 @@
 const { Types } = require("mongoose");
 const { product, clothing, electronic } = require("../product.model");
-const { getSelectData, getUnSelectData } = require("../../utils");
+const {
+  getSelectData,
+  getUnSelectData,
+  updateNestedObj,
+} = require("../../utils");
 async function findAllProductInDraft({ query, limit, skip }) {
   return queryProducts({ query, limit, skip });
 }
@@ -83,16 +87,16 @@ async function findProduct({ product_id, unSelect }) {
 }
 
 // Update product by id
-async function updateProductById({
+const updateProductById = async ({
   productId,
   bodyUpdate,
   model,
   isNew = true,
-}) {
+}) => {
   return await model.findByIdAndUpdate(productId, bodyUpdate, {
     new: isNew,
   });
-}
+};
 
 module.exports = {
   findAllProductInDraft,

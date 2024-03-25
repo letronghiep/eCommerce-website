@@ -12,6 +12,7 @@ const {
   findProduct,
   updateProductById,
 } = require("../models/repositories/product.repo");
+const { removeUndefinedObject, updateNestedObj } = require("../utils");
 
 class ProductFactory {
   static registryProduct = {};
@@ -28,6 +29,7 @@ class ProductFactory {
     const productClass = ProductFactory.registryProduct[type];
     if (!productClass)
       throw new BadRequestError("Invalid Product type : ", type);
+
     return new productClass(payload).updateProduct(productId);
   }
   /**
@@ -97,9 +99,20 @@ class Product {
     return await product.create({ ...this, _id: product_id });
   }
   async updateProduct(productId, payload) {
-    return await updateProductById({ productId, payload, model: product });
+    return await product.findByIdAndUpdate(productId, payload, {
+      new: true,
+    });
   }
+  // async updateProduct(productId, payload) {
+  //   return await product.findByIdAndUpdate(productId, payload, {
+  //     new: true,
+  //   });
+  // }
 }
+/**
+ * @abstract update clothing
+ *
+ */
 class Clothing extends Product {
   async createProduct() {
     try {
@@ -115,8 +128,55 @@ class Clothing extends Product {
       throw new BadRequestError(error.message);
     }
   }
+  // async updateProduct(productId) {
+  //   /**
+  //    * {
+  //    *  a: undefined
+  //    * b: undefined
+  //    * }
+  //    *
+  //    */
+  //   // 1. Remove attr has null or undefined
+  //   const objectParams = this;
+  //   if (objectParams.product_attributes) {
+  //     // Update child
+  //     await clothing.findByIdAndUpdate(productId, objectParams, {
+  //       new: true,
+  //     });
+  //   }
+  //   const updateProduct = await super.updateProduct(productId, objectParams);
+  //   return updateProduct;
+  // }
+  async updateProduct(productId) {
+    // 1. remove attributes has null undefined
+    const objParams = removeUndefinedObject(this);
+    if (objParams.product_attributes) {
+      // Update product by id
+      // await updateProductById({
+      //   productId,
+      //   bodyUpdate: updateNestedObj(objParams.product_attributes),
+      //   model: clothing,
+      // });
+      await clothing.findByIdAndUpdate(
+        productId,
+        updateNestedObj(objParams.product_attributes),
+        {
+          new: true,
+        }
+      );
+    }
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateNestedObj(objParams)
+    );
+    return updateProduct;
+  }
 }
 // Define sub-class for different product type = clothing
+/**
+ * @abstract update electronic
+ *
+ */
 class Electronic extends Product {
   async createProduct() {
     try {
@@ -137,12 +197,19 @@ class Electronic extends Product {
 
   async updateProduct(productId) {
     // 1. remove attributes has null undefined
-    const objParams = this;
+    const objParams = removeUndefinedObject(this);
     if (objParams.product_attributes) {
       // Update product by id
-      await updateProductById({ productId, objParams, model: clothing });
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObj(objParams.product_attributes),
+        model: electronic,
+      });
     }
-    const updateProduct = await super.updateProduct(productId, objParams);
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateNestedObj(objParams)
+    );
     return updateProduct;
   }
 }

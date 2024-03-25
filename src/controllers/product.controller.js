@@ -16,15 +16,33 @@ class ProductController {
       }),
     }).send(res);
   };
-
+  // Update product
+  // updateProduct = async (req, res, next) => {
+  //   new CREATED({
+  //     message: "Update successful",
+  //     metadata: await ProductServiceV2.updateProduct(
+  //       req.body.product_type,
+  //       req.params.productId,
+  //       {
+  //         ...req.body,
+  //         product_shop: req.user.userId,
+  //       }
+  //     ),
+  //   }).send(res);
+  // };
   updateProduct = async (req, res, next) => {
-    new CREATED({
+    new SuccessResponse({
       message: "Product updated successfully",
-      metadata: await ProductServiceV2.updateProduct(req.body.product_type, req.params.productId, {
-        ...req.body,
-        product_shop: req.user.userId,
-      }),
+      metadata: await ProductServiceV2.updateProduct(
+        req.body.product_type,
+        req.params.productId,
+        {
+          ...req.body,
+          product_shop: req.user.userId,
+        }
+      ),
     }).send(res);
+    console.log("Product updated successfully1::", req.body);
   };
   findAllProductDraftInShop = async (req, res, next) => {
     new SuccessResponse({

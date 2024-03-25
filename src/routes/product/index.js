@@ -13,6 +13,7 @@ router.get(
 router.use(authenticationV2);
 // ////
 router.post("", asyncHandler(productController.createProduct));
+router.patch("/:productId", productController.updateProduct);
 router.post(
   "/published/:id",
   asyncHandler(productController.publishedAProductInDraft)
@@ -22,7 +23,6 @@ router.post(
   asyncHandler(productController.unPublishedAProductInDraft)
 );
 // PUt
-router.patch("/:productId", productController.updateProduct);
 // get
 router.get("/draft", asyncHandler(productController.findAllProductDraftInShop));
 router.get(
